@@ -65,6 +65,26 @@
             margin-right: 10px;
         }
 
+        /* Aesthetic Button Styling */
+        .visit-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #6a0dad; /* Dark purple */
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(106, 13, 173, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .visit-button:hover {
+            background-color: #5500b8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(106, 13, 173, 0.6);
+        }
+
         /* KPI Section */
         .kpi-cards {
             display: flex;
@@ -135,6 +155,10 @@
             <div class="header-content">
                 <h1>PetMalu Data Dashboard</h1>
                 <p>Real-time insights into user engagement and webpage performance</p>
+                <!-- Aesthetic Button to visit PetMalu -->
+                <a href="https://milkfish1010.github.io/PetMalu/?fbclid=IwY2xjawGYXGxleHRuA2FlbQIxMAABHXuonS6izqHbGcsyeYZ7vgDLEIOJLvuDq53Nq6jbhe6yeAnMhethxlaSqg_aem_eTyzzGQNybcaQ1yfKXoXoA" target="_blank">
+                    <button class="visit-button">Visit PetMalu</button>
+                </a>
             </div>
             <div class="logo">
                 <img src="https://github.com/MilkFish1010/PetMalu/blob/main/images/wildhob.jpg?raw=true" alt="Pet Grooming Logo"> <!-- Add logo URL -->
@@ -216,35 +240,40 @@
                     legend: { display: false }
                 },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: "#e8e8e8" } },
-                    x: { grid: { display: false } }
+                    x: { beginAtZero: true },
+                    y: { beginAtZero: true }
                 }
             }
         });
 
-        // Chart configuration for User Interactions by Action
+        // Chart configuration for Interactions Breakdown
         const ctxInteractions = document.getElementById("interactionsChart").getContext("2d");
         new Chart(ctxInteractions, {
             type: "pie",
             data: {
                 labels: Object.keys(mockData.interactions),
                 datasets: [{
-                    label: "User Interactions",
+                    label: "Interactions",
                     data: Object.values(mockData.interactions),
-                    backgroundColor: ["#2196F3", "#FF9800", "#9C27B0"]
+                    backgroundColor: ["#ff6384", "#36a2eb", "#ffce56"],
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: 'right' },
-                    tooltip: { callbacks: { label: (context) => `${context.label}: ${context.raw}` } }
+                    legend: { position: "bottom" }
                 }
             }
         });
     </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
