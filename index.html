@@ -29,7 +29,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 30px 20px;
-            background-image: url('https://almosthomeanimals.org/wp-content/uploads/2013/06/header.jpg'); /* Add a real pet-themed image URL */
+            background-image: url('https://almosthomeanimals.org/wp-content/uploads/2013/06/header.jpg');
             background-size: cover;
             background-position: center;
             color: rgb(14, 0, 136);
@@ -46,7 +46,7 @@
             font-size: 2.5em;
             font-weight: bold;
             margin-bottom: 8px;
-            color: rgb(172, 20, 248); /* Set title color to yellow */
+            color: rgb(172, 20, 248);
         }
         .header p {
             font-size: 1.2em;
@@ -72,7 +72,7 @@
             font-size: 1em;
             font-weight: bold;
             color: #fff;
-            background-color: #6a0dad; /* Dark purple */
+            background-color: #6a0dad;
             border: none;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(106, 13, 173, 0.4);
@@ -91,6 +91,7 @@
             gap: 20px;
             margin-bottom: 30px;
             justify-content: space-around;
+            flex-wrap: wrap;
         }
         .kpi-card {
             flex: 1;
@@ -147,7 +148,7 @@
             color: #555;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Load Chart.js for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -155,13 +156,12 @@
             <div class="header-content">
                 <h1>PetMalu Data Dashboard</h1>
                 <p>Real-time insights into user engagement and webpage performance</p>
-                <!-- Aesthetic Button to visit PetMalu -->
                 <a href="https://milkfish1010.github.io/PetMalu/?fbclid=IwY2xjawGYXGxleHRuA2FlbQIxMAABHXuonS6izqHbGcsyeYZ7vgDLEIOJLvuDq53Nq6jbhe6yeAnMhethxlaSqg_aem_eTyzzGQNybcaQ1yfKXoXoA" target="_blank">
                     <button class="visit-button">Visit PetMalu</button>
                 </a>
             </div>
             <div class="logo">
-                <img src="https://github.com/MilkFish1010/PetMalu/blob/main/images/wildhob.jpg?raw=true" alt="Pet Grooming Logo"> <!-- Add logo URL -->
+                <img src="https://github.com/MilkFish1010/PetMalu/blob/main/images/wildhob.jpg?raw=true" alt="Pet Grooming Logo">
                 PetGroom
             </div>
         </header>
@@ -183,6 +183,10 @@
             <div class="kpi-card">
                 <h2>Customer Satisfaction</h2>
                 <p id="customerSatisfactionKPI">Loading...</p>
+            </div>
+            <div class="kpi-card">
+                <h2>Daily Income</h2>
+                <p id="dailyIncomeKPI">Loading...</p>
             </div>
         </section>
 
@@ -209,7 +213,8 @@
             pageViews: [800, 1200, 1500, 1000, 1800, 2000, 1600],  // Example weekly page views
             interactions: { "Book Now": 200, "Download Coupon": 125, "Contact Form": 75 },
             conversionRate: "8%",
-            customerSatisfaction: 87  // Example satisfaction percentage
+            customerSatisfaction: 87,  // Example satisfaction percentage
+            dailyIncome: 1250.50  // Example daily income in currency format
         };
 
         // Display KPI data
@@ -217,60 +222,57 @@
         document.getElementById("conversionRateKPI").textContent = mockData.conversionRate;
         document.getElementById("userInteractionsKPI").textContent = `${Object.values(mockData.interactions).reduce((a, b) => a + b).toLocaleString()} interactions`;
         document.getElementById("customerSatisfactionKPI").textContent = `${mockData.customerSatisfaction}%`;
+        document.getElementById("dailyIncomeKPI").textContent = `$${mockData.dailyIncome.toFixed(2)}`; // Daily Income Display
 
-        // Chart configuration for Page Views over Time
-        const ctxPageViews = document.getElementById("pageViewsChart").getContext("2d");
-        new Chart(ctxPageViews, {
-            type: "line",
+        // Set up the page views chart
+        const pageViewsCtx = document.getElementById('pageViewsChart').getContext('2d');
+        const pageViewsChart = new Chart(pageViewsCtx, {
+            type: 'line',
             data: {
-                labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                 datasets: [{
-                    label: "Page Views",
+                    label: 'Page Views',
                     data: mockData.pageViews,
-                    borderColor: "#5a6ffa",
-                    backgroundColor: "rgba(90, 111, 250, 0.2)",
+                    backgroundColor: 'rgba(106, 13, 173, 0.2)',
+                    borderColor: 'rgba(106, 13, 173, 1)',
+                    borderWidth: 2,
                     fill: true,
-                    tension: 0.3,
-                    pointBackgroundColor: "#5a6ffa"
+                    tension: 0.2
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: true }
                 },
                 scales: {
-                    x: { beginAtZero: true },
                     y: { beginAtZero: true }
                 }
             }
         });
 
-        // Chart configuration for Interactions Breakdown
-        const ctxInteractions = document.getElementById("interactionsChart").getContext("2d");
-        new Chart(ctxInteractions, {
-            type: "pie",
+        // Set up the interactions chart
+        const interactionsCtx = document.getElementById('interactionsChart').getContext('2d');
+        const interactionsChart = new Chart(interactionsCtx, {
+            type: 'doughnut',
             data: {
                 labels: Object.keys(mockData.interactions),
                 datasets: [{
-                    label: "Interactions",
                     data: Object.values(mockData.interactions),
-                    backgroundColor: ["#ff6384", "#36a2eb", "#ffce56"],
+                    backgroundColor: ['#6a0dad', '#ff9800', '#4caf50'],
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: "bottom" }
+                    legend: { display: true }
                 }
             }
         });
     </script>
 </body>
 </html>
-
-
-
 
 
 
