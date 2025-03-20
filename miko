@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Department Analysis - by SARSALIJO, JOHN MIKO</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Permanent+Marker&family=Bangers&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @font-face {
+            font-family: 'OnePiece';
+            src: url('https://db.onlinewebfonts.com/t/fd6fa80ce81c574b6dedab9a4c2bd5aa.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        :root {
+            --primary: #c41e3a; /* Luffy's red */
+            --secondary: #ffd700; /* Straw hat gold */
+            --accent: #1e90ff; /* Ocean blue */
+            --light: #f0e68c; /* Light sand */
+            --dark: #2f4f4f; /* Dark slate */
+            --wood: #8b4513; /* Wood brown */
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --neon-glow: 0 0 10px var(--secondary);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(46, 20, 20, 0.95)),
+                       url('https://i.imgur.com/nQwQUfC.png');
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--light);
+            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(30, 144, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* Modern Header */
+        header {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.9), rgba(196, 30, 58, 0.9));
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                       inset 0 0 50px rgba(255, 215, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, transparent 45%, var(--secondary) 49%, transparent 51%),
+                linear-gradient(-45deg, transparent 45%, var(--secondary) 49%, transparent 51%);
+            background-size: 20px 20px;
+            opacity: 0.1;
+            animation: patternMove 30s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle at center, transparent, rgba(0, 0, 0, 0.5));
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .title-container {
+            position: relative;
+            z-index: 2;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        h1 {
+            font-family: 'OnePiece', 'Bangers', cursive;
+            font-size: 4rem;
+            letter-spacing: 4px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+            transform: rotateX(10deg);
+            transition: transform 0.3s ease;
+        }
+
+        h1 span {
+            background: linear-gradient(to bottom, var(--secondary) 30%, #FFA500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 
+                3px 3px 0 var(--wood),
+                6px 6px 0 rgba(0, 0, 0, 0.2),
+                0 0 20px var(--secondary),
+                0 0 40px rgba(255, 215, 0, 0.5);
+            position: relative;
+            display: inline-block;
+            animation: titleFloat 5s ease-in-out infinite;
+        }
+
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0) rotateX(10deg); }
+            50% { transform: translateY(-10px) rotateX(20deg); }
+        }
+
+        .author {
+            font-family: 'Pirata One', cursive;
+            font-size: 1.6rem;
+            color: var(--light);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3),
+                         0 0 10px var(--secondary);
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.5s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .title-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .title-decoration::before,
+        .title-decoration::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-image: url('https://i.imgur.com/YkH4Hzg.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.15;
+        }
+
+        .title-decoration::before {
+            top: -20px;
+            left: -20px;
+            transform: rotate(-15deg);
+            animation: decorationFloat 6s ease-in-out infinite;
+        }
+
+        .title-decoration::after {
+            bottom: -20px;
+            right: -20px;
+            transform: rotate(15deg) scaleX(-1);
+            animation: decorationFloat 6s ease-in-out infinite reverse;
+        }
+
+        @keyframes decorationFloat {
+            0%, 100% { transform: rotate(-15deg) translate(0, 0); }
+            50% { transform: rotate(-5deg) translate(10px, -10px); }
+        }
+
+        /* Modern Glass Cards */
+        .instructions-box, .file-drop-area, .chart-container {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .instructions-box:hover, .file-drop-area:hover, .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            border-color: var(--secondary);
+        }
+
+        /* Modern Buttons */
+        .upload-btn, .export-btn, .chart-btn {
+            background: linear-gradient(135deg, var(--primary), var(--wood));
+            color: var(--secondary);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Pirata One', cursive;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .upload-btn:hover, .export-btn:hover, .chart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3),
+                       0 0 10px var(--secondary);
+        }
+
+        .upload-btn::before, .export-btn::before, .chart-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .upload-btn:hover::before, .export-btn:hover::before, .chart-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Modern Table */
+        .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            margin: 2rem 0;
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, var(--primary), var(--wood));
+            color: var(--secondary);
+            padding: 1.2rem;
+            font-family: 'Permanent Marker', cursive;
+            text-align: left;
+            border-radius: 12px;
+        }
+
+        .results-table td {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1rem;
+            color: var(--light);
+            border-top: 1px solid var(--glass-border);
+            font-family: 'Pirata One', cursive;
+        }
+
+        .results-table tr:hover td {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: var(--secondary);
+        }
+
+        /* Chart Enhancements */
+        .chart-container {
+            background: rgba(0, 0, 0, 0.7);
+            margin: 2rem 0;
+            padding: 2rem;
+            border-radius: 20px;
+            min-height: 400px;
+            height: 60vh;
+            width: 100%;
+            position: relative;
+        }
+
+        .chart-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .chart-btn.active {
+            background: linear-gradient(135deg, var(--secondary), var(--wood));
+            color: var(--dark);
+            box-shadow: var(--neon-glow);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .instructions-box, .file-drop-area, .chart-container {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--glass-border);
+            border-radius: 50%;
+            border-top-color: var(--secondary);
+            animation: spin 1s ease-in-out infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Straw Hat Crew Icons */
+        .straw-hat-icons {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .crew-icon {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid var(--secondary);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 100;
+        }
+
+        .crew-icon:hover {
+            transform: scale(1.3) rotate(10deg);
+            border-color: var(--primary);
+            box-shadow: 0 0 25px var(--secondary);
+            z-index: 101;
+        }
+
+        /* Individual crew member animations */
+        #luffy { animation: float-around1 30s infinite linear; }
+        #zoro { animation: float-around2 35s infinite linear; }
+        #nami { animation: float-around3 32s infinite linear; }
+        #usopp { animation: float-around4 38s infinite linear; }
+        #sanji { animation: float-around5 34s infinite linear; }
+        #chopper { animation: float-around1 36s infinite linear reverse; }
+        #robin { animation: float-around2 33s infinite linear reverse; }
+        #franky { animation: float-around3 37s infinite linear reverse; }
+        #brook { animation: float-around4 31s infinite linear reverse; }
+
+        @keyframes float-around1 {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            25% { transform: translate(50vw, 25vh) rotate(90deg) scale(1.1); }
+            50% { transform: translate(80vw, 50vh) rotate(180deg) scale(1); }
+            75% { transform: translate(30vw, 75vh) rotate(270deg) scale(1.1); }
+            100% { transform: translate(0, 0) rotate(360deg) scale(1); }
+        }
+
+        @keyframes float-around2 {
+            0% { transform: translate(20vw, 0) rotate(0deg) scale(1.1); }
+            25% { transform: translate(70vw, 30vh) rotate(-90deg) scale(1); }
+            50% { transform: translate(40vw, 60vh) rotate(-180deg) scale(1.1); }
+            75% { transform: translate(10vw, 40vh) rotate(-270deg) scale(1); }
+            100% { transform: translate(20vw, 0) rotate(-360deg) scale(1.1); }
+        }
+
+        @keyframes float-around3 {
+            0% { transform: translate(80vw, 10vh) rotate(0deg) scale(1); }
+            25% { transform: translate(60vw, 50vh) rotate(120deg) scale(1.1); }
+            50% { transform: translate(20vw, 70vh) rotate(240deg) scale(1); }
+            75% { transform: translate(40vw, 20vh) rotate(360deg) scale(1.1); }
+            100% { transform: translate(80vw, 10vh) rotate(480deg) scale(1); }
+        }
+
+        @keyframes float-around4 {
+            0% { transform: translate(40vw, 80vh) rotate(0deg) scale(1.1); }
+            25% { transform: translate(10vw, 60vh) rotate(-120deg) scale(1); }
+            50% { transform: translate(50vw, 20vh) rotate(-240deg) scale(1.1); }
+            75% { transform: translate(90vw, 40vh) rotate(-360deg) scale(1); }
+            100% { transform: translate(40vw, 80vh) rotate(-480deg) scale(1.1); }
+        }
+
+        @keyframes float-around5 {
+            0% { transform: translate(60vw, 40vh) rotate(0deg) scale(1); }
+            25% { transform: translate(30vw, 10vh) rotate(180deg) scale(1.1); }
+            50% { transform: translate(10vw, 50vh) rotate(360deg) scale(1); }
+            75% { transform: translate(70vw, 70vh) rotate(540deg) scale(1.1); }
+            100% { transform: translate(60vw, 40vh) rotate(720deg) scale(1); }
+        }
+
+        /* Container adjustment for floating icons */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Make sure other elements stay on top of floating icons */
+        header, .file-input-container, .results-section {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Background Elements */
+        .background-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .background-elements::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                url('https://i.imgur.com/YkH4Hzg.png') no-repeat 5% 95%, /* Jolly Roger */
+                url('https://i.imgur.com/8XWBHqH.png') no-repeat 95% 5%; /* Straw Hat */
+            background-size: 150px;
+            opacity: 0.15;
+        }
+
+        /* Header Enhancement */
+        header::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: url('https://i.imgur.com/YkH4Hzg.png') center/contain no-repeat;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        h2 {
+            font-family: 'Permanent Marker', cursive;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            color: var(--secondary);
+            letter-spacing: 1px;
+            transform: skew(-3deg);
+        }
+        
+        .author {
+            font-family: 'Pirata One', cursive;
+            font-size: 1.4rem;
+            color: var(--light);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .file-input-container {
+            position: relative;
+        }
+
+        .file-input-container::before {
+            content: '⚓';
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            font-size: 2rem;
+            color: var(--secondary);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .file-drop-area {
+            border: 3px dashed var(--secondary);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 auto;
+            font-family: 'Permanent Marker', cursive;
+        }
+        
+        .upload-btn, .export-btn, .chart-btn {
+            font-family: 'Pirata One', cursive;
+            background: linear-gradient(135deg, var(--primary), var(--wood));
+            color: var(--secondary);
+            border: 2px solid var(--secondary);
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-btn:hover, .export-btn:hover, .chart-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .upload-btn::after, .export-btn::after, .chart-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.2),
+                rgba(255, 255, 255, 0)
+            );
+            transform: rotate(45deg) translateX(-100%);
+            transition: 0.5s all;
+        }
+        
+        .upload-btn:hover::after, .export-btn:hover::after, .chart-btn:hover::after {
+            transform: rotate(45deg) translateX(100%);
+        }
+        
+        .results-table th {
+            font-family: 'Permanent Marker', cursive;
+            background: linear-gradient(135deg, var(--primary), var(--wood));
+            color: var(--secondary);
+            font-size: 1.2rem;
+            padding: 1.2rem;
+            text-align: left;
+            letter-spacing: 1px;
+        }
+        
+        .results-table td {
+            font-family: 'Pirata One', cursive;
+            font-size: 1.1rem;
+            padding: 1rem;
+            color: var(--light);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        footer {
+            font-family: 'Permanent Marker', cursive;
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            letter-spacing: 1px;
+        }
+        
+        footer::before {
+            content: '⚓';
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.05) rotate(5deg); opacity: 0.8; }
+            70% { transform: scale(0.9) rotate(-3deg); opacity: 0.9; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .chart-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .chart-switcher::before {
+            content: '🏴‍☠️';
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .chart-switcher::after {
+            content: '⚔️';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            animation: float 4s ease-in-out infinite reverse;
+        }
+        
+        .results-table {
+            position: relative;
+        }
+
+        .results-table::before {
+            content: '🗺️';
+            position: absolute;
+            top: -30px;
+            left: -30px;
+            font-size: 2rem;
+            animation: float 5s ease-in-out infinite;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .file-drop-area {
+                padding: 1rem;
+            }
+            
+            .visualizations {
+                flex-direction: column;
+            }
+        }
+
+        .header-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .header-icon {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.2;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .header-icon.skull-left {
+            top: 10px;
+            left: 10px;
+            background-image: url('https://i.imgur.com/YkH4Hzg.png');
+        }
+
+        .header-icon.skull-right {
+            top: 10px;
+            right: 10px;
+            background-image: url('https://i.imgur.com/YkH4Hzg.png');
+            transform: scaleX(-1);
+        }
+
+        .header-icon.hat-left {
+            bottom: 10px;
+            left: 10px;
+            background-image: url('https://i.imgur.com/8XWBHqH.png');
+        }
+
+        .header-icon.hat-right {
+            bottom: 10px;
+            right: 10px;
+            background-image: url('https://i.imgur.com/8XWBHqH.png');
+            transform: scaleX(-1);
+        }
+
+        .instructions-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--secondary);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .instructions-box::before {
+            content: '📜';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .instructions-title {
+            font-family: 'Pirata One', cursive;
+            color: var(--secondary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .instructions-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .instructions-list li {
+            font-family: 'Pirata One', cursive;
+            color: var(--light);
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            padding-left: 2rem;
+            position: relative;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .instructions-list li::before {
+            content: '⚓';
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, var(--primary), var(--wood));
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg);
+            box-shadow: 0 0 30px var(--secondary);
+        }
+
+        .theme-toggle i {
+            color: var(--secondary);
+            font-size: 1.5rem;
+        }
+
+        /* Search and Filter Section */
+        .search-filter-container {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .sort-btn {
+            background: linear-gradient(135deg, var(--primary), var(--wood));
+            color: var(--secondary);
+            border: 2px solid var(--secondary);
+            padding: 0.8rem 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: 'Pirata One', cursive;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .sort-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .sort-btn.active {
+            background: linear-gradient(135deg, var(--secondary), var(--wood));
+            color: var(--dark);
+        }
+
+        /* Comparison Feature */
+        .comparison-container {
+            display: none;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .comparison-container.active {
+            display: block;
+        }
+
+        .comparison-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .comparison-select {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--secondary);
+            border-radius: 10px;
+            color: var(--light);
+            font-family: 'Pirata One', cursive;
+            font-size: 1rem;
+        }
+
+        /* Statistics Panel */
+        .statistics-panel {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.4), rgba(196, 30, 58, 0.4));
+            border: 1px solid var(--secondary);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .stat-value {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.8rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-family: 'Pirata One', cursive;
+            color: var(--light);
+            font-size: 1.1rem;
+        }
+
+        /* Export Options */
+        .export-options {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .export-btn {
+            flex: 1;
+        }
+
+        /* Responsive Design Updates */
+        @media (max-width: 768px) {
+            .search-filter-container,
+            .comparison-controls {
+                flex-direction: column;
+            }
+
+            .statistics-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .export-options {
+                flex-direction: column;
+            }
+        }
+
+        /* Data Insights Feature */
+        .insights-container {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--secondary);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .insights-container::before {
+            content: '🏴‍☠️';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 2rem;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .insights-title {
+            font-family: 'Permanent Marker', cursive;
+            color: var(--secondary);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.4), rgba(196, 30, 58, 0.4));
+            border: 1px solid var(--secondary);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transform-origin: left;
+            animation: slideIn 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        .insight-card:nth-child(1) { animation-delay: 0.2s; }
+        .insight-card:nth-child(2) { animation-delay: 0.4s; }
+        .insight-card:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .insight-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            color: var(--secondary);
+        }
+
+        .insight-title {
+            font-family: 'Pirata One', cursive;
+            color: var(--secondary);
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-content {
+            font-family: 'Pirata One', cursive;
+            color: var(--light);
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .insight-highlight {
+            color: var(--secondary);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-elements"></div>
+    <div class="straw-hat-icons">
+        <div id="luffy" class="crew-icon" style="background-image: url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdXNkanJpYXpwY21xZDVtd2tzYjNtaGpwZm9veTVrbXBqYm9mMnhvNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/fZdzEHC8sMC0E/giphy.gif'); top: 10%; left: 5%;" title="Monkey D. Luffy"></div>
+        <div id="zoro" class="crew-icon" style="background-image: url('https://media.giphy.com/media/XARctHXJvoIQP0rH3y/giphy.gif?cid=790b7611qogs14gl5gbpwnzptam0oalgrmqqt9dl9t08yv1n&ep=v1_gifs_search&rid=giphy.gif&ct=g'); top: 20%; left: 80%;" title="Roronoa Zoro"></div>
+        <div id="nami" class="crew-icon" style="background-image: url('https://media.giphy.com/media/Qcrmc6dbGyLMQ/giphy.gif?cid=790b76117xqg85piny87u3bnl19kef1nej0e9jda0pm2rq38&ep=v1_gifs_search&rid=giphy.gif&ct=g'); top: 40%; left: 15%;" title="Nami"></div>
+        <div id="usopp" class="crew-icon" style="background-image: url('https://media.giphy.com/media/oQ4wYOgjQbD7G/giphy.gif?cid=790b7611xc6cny5te7zs3vztxmabt95ohjadn8jg0sq5ipm6&ep=v1_gifs_search&rid=giphy.gif&ct=g'); top: 60%; left: 75%;" title="Usopp"></div>
+        <div id="sanji" class="crew-icon" style="background-image: url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2IxZ3RjcHo2aDVpZW4yM20wcmduN2R6eWxhdDdldHI5eXlscHJlcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/LniGJTs1OwA0Z4aW9b/giphy.gif'); top: 30%; left: 90%;" title="Sanji"></div>
+        <div id="chopper" class="crew-icon" style="background-image: url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcTQzZWVoMGM5NTJkMGZjNmNscXpiMHg1eW10Mjd1M3JsbDk3OWc4cSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/R548B8WxpUTsI/giphy.gif'); top: 70%; left: 25%;" title="Tony Tony Chopper"></div>
+        <div id="robin" class="crew-icon" style="background-image: url('https://media.giphy.com/media/13SYnseWRwRSc8/giphy.gif?cid=790b76113wihn6hhz136creo0q9g5b230ax48200qib9bwdx&ep=v1_gifs_search&rid=giphy.gif&ct=g'); top: 50%; left: 60%;" title="Nico Robin"></div>
+        <div id="franky" class="crew-icon" style="background-image: url('https://media.giphy.com/media/CUfY9iiyxyx56/giphy.gif?cid=790b7611bypyu7adqmhxpi31duydlobyi7dqoqrm6kjv26ss&ep=v1_gifs_search&rid=giphy.gif&ct=g'); top: 80%; left: 40%;" title="Franky"></div>
+        <div id="brook" class="crew-icon" style="background-image: url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXQ3c2d3amsxdmZnNmRra2QyYm1vbDV0YTBuczFvNjA0b3l1YzdrYyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/OlM1nq85xO6Fq/giphy.gif'); top: 25%; left: 45%;" title="Brook"></div>
+    </div>
+    <div class="container">
+        <header class="animate__animated animate__fadeIn">
+            <div class="title-decoration"></div>
+            <div class="title-container">
+                <h1><span>Student Department Analysis</span></h1>
+                <p class="author">by SARSALIJO, JOHN MIKO</p>
+            </div>
+        </header>
+
+        <div class="instructions-box animate__animated animate__fadeIn">
+            <h2 class="instructions-title">Navigation Guide</h2>
+            <ul class="instructions-list">
+                <li>Prepare your data file (CSV format)</li>
+                <li>Upload via drag & drop or file selection</li>
+                <li>View dynamic visualizations of department distribution</li>
+                <li>Switch between chart types for different perspectives</li>
+                <li>Export results for further analysis</li>
+            </ul>
+        </div>
+        
+        <div class="search-filter-container animate__animated animate__fadeIn">
+            <div class="sort-controls">
+                <button class="sort-btn" id="sortByName">
+                    <i class="fas fa-sort-alpha-down"></i> Sort by Name
+                </button>
+                <button class="sort-btn" id="sortByCount">
+                    <i class="fas fa-sort-numeric-down"></i> Sort by Count
+                </button>
+            </div>
+        </div>
+        
+        <div class="file-input-container animate__animated animate__fadeInUp">
+            <h2>Upload Data</h2>
+            <div class="file-drop-area" id="dropArea">
+                <p>Drag & drop your CSV file here or click to browse</p>
+                <input type="file" id="fileInput" class="file-input" accept=".csv">
+                <button class="upload-btn" id="uploadBtn">
+                    <i class="fas fa-upload"></i> Upload CSV
+                </button>
+            </div>
+        </div>
+        
+        <div class="loader hidden" id="loader"></div>
+        
+        <div id="resultsSection" class="hidden animate__animated animate__fadeIn">
+            <h2>Analysis Results</h2>
+            
+            <div class="chart-switcher">
+                <button class="chart-btn active" id="barChartBtn">
+                    <i class="fas fa-chart-bar"></i> Bar Chart
+                </button>
+                <button class="chart-btn" id="pieChartBtn">
+                    <i class="fas fa-chart-pie"></i> Pie Chart
+                </button>
+            </div>
+            
+            <div class="visualizations">
+                <div class="chart-container" id="barChartContainer">
+                    <canvas id="barChart"></canvas>
+                </div>
+                
+                <div class="chart-container hidden" id="pieChartContainer">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+            
+            <h2>Department Summary</h2>
+            <table class="results-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Student Count</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Table data will be inserted here -->
+                </tbody>
+            </table>
+            
+            <button class="export-btn" id="exportBtn">
+                <i class="fas fa-download"></i> Export Results
+            </button>
+        </div>
+
+        <div class="statistics-panel animate__animated animate__fadeIn">
+            <div class="stat-card">
+                <div class="stat-value" id="totalStudents">0</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalDepartments">0</div>
+                <div class="stat-label">Departments</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="averageStudents">0</div>
+                <div class="stat-label">Avg. Students/Dept</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="largestDepartment">-</div>
+                <div class="stat-label">Largest Department</div>
+            </div>
+        </div>
+
+        <!-- Add Data Insights Section -->
+        <div class="insights-container animate__animated animate__fadeIn">
+            <h2 class="insights-title">Crew's Data Insights</h2>
+            <div id="insightsContent">
+                <!-- Insights will be dynamically added here -->
+            </div>
+        </div>
+
+        <div class="comparison-container" id="comparisonContainer">
+            <h2>Department Comparison</h2>
+            <div class="comparison-controls">
+                <select class="comparison-select" id="dept1Select">
+                    <option value="">Select Department 1</option>
+                </select>
+                <select class="comparison-select" id="dept2Select">
+                    <option value="">Select Department 2</option>
+                </select>
+                <button class="sort-btn" id="compareBtn">Compare</button>
+            </div>
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+
+        <div class="export-options">
+            <button class="export-btn" id="exportCSV">
+                <i class="fas fa-file-csv"></i> Export to CSV
+            </button>
+            <button class="export-btn" id="exportPDF">
+                <i class="fas fa-file-pdf"></i> Export to PDF
+            </button>
+            <button class="export-btn" id="exportJSON">
+                <i class="fas fa-file-code"></i> Export to JSON
+            </button>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 Data Visualization Project</p>
+    </footer>
+    
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables
+            let csvData = null;
+            let barChart = null;
+            let pieChart = null;
+            let departmentCounts = {};
+            
+            // DOM Elements
+            const fileInput = document.getElementById('fileInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const dropArea = document.getElementById('dropArea');
+            const loader = document.getElementById('loader');
+            const resultsSection = document.getElementById('resultsSection');
+            const barChartBtn = document.getElementById('barChartBtn');
+            const pieChartBtn = document.getElementById('pieChartBtn');
+            const barChartContainer = document.getElementById('barChartContainer');
+            const pieChartContainer = document.getElementById('pieChartContainer');
+            const resultsTable = document.getElementById('resultsTable');
+            const tableBody = document.getElementById('tableBody');
+            const exportBtn = document.getElementById('exportBtn');
+            
+            // Event Listeners
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileUpload);
+            dropArea.addEventListener('dragover', handleDragOver);
+            dropArea.addEventListener('drop', handleDrop);
+            barChartBtn.addEventListener('click', () => toggleChartView('bar'));
+            pieChartBtn.addEventListener('click', () => toggleChartView('pie'));
+            exportBtn.addEventListener('click', exportResults);
+            
+            // Functions
+            function handleDragOver(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropArea.style.borderColor = '#e74c3c';
+                dropArea.style.backgroundColor = 'rgba(231, 76, 60, 0.1)';
+            }
+            
+            function handleDrop(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropArea.style.borderColor = '#3498db';
+                dropArea.style.backgroundColor = 'rgba(52, 152, 219, 0.05)';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileUpload();
+                }
+            }
+            
+            function handleFileUpload() {
+                const file = fileInput.files[0];
+                
+                if (file && file.type === 'text/csv') {
+                    loader.style.display = 'block';
+                    
+                    Papa.parse(file, {
+                        header: true,
+                        complete: function(results) {
+                            csvData = results.data;
+                            processDepartmentData();
+                            loader.style.display = 'none';
+                            resultsSection.classList.remove('hidden');
+                            
+                            setTimeout(() => {
+                                barChartContainer.classList.add('chart-active');
+                                pieChartContainer.classList.add('chart-active');
+                            }, 100);
+                        },
+                        error: function(error) {
+                            alert('Error parsing CSV: ' + error.message);
+                            loader.style.display = 'none';
+                        }
+                    });
+                } else {
+                    alert('Please upload a valid CSV file');
+                }
+            }
+            
+            function processDepartmentData() {
+                departmentCounts = {};
+                
+                // Count students in each department
+                csvData.forEach(student => {
+                    const department = student.Department;
+                    if (department) {
+                        departmentCounts[department] = (departmentCounts[department] || 0) + 1;
+                    }
+                });
+                
+                // Create sorted array of departments for visualization
+                const sortedDepartments = Object.entries(departmentCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .filter(item => item[0] && item[0].trim() !== '');
+                
+                const labels = sortedDepartments.map(item => item[0]);
+                const data = sortedDepartments.map(item => item[1]);
+                
+                createBarChart(labels, data);
+                createPieChart(labels, data);
+                populateTable(sortedDepartments);
+                updateStatistics();
+                setupComparison();
+                generateInsights();
+            }
+            
+            function createBarChart(labels, data) {
+                const ctx = document.getElementById('barChart').getContext('2d');
+                const totalStudents = data.reduce((sum, val) => sum + val, 0);
+                
+                if (barChart) {
+                    barChart.destroy();
+                }
+                
+                barChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Number of Students',
+                            data: data,
+                            backgroundColor: generateColors(labels.length, 0.7),
+                            borderColor: generateColors(labels.length, 1),
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                top: 20,
+                                right: 20,
+                                bottom: 40,
+                                left: 20
+                            }
+                        },
+                        animation: {
+                            duration: 2000,
+                            easing: 'easeInOutQuart',
+                            delay: (context) => context.dataIndex * 100
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    color: '#ffd700',
+                                    font: {
+                                        family: 'Pirata One',
+                                        size: 14
+                                    }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Students Count by Department',
+                                color: '#ffd700',
+                                font: {
+                                    family: 'Permanent Marker',
+                                    size: 24,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed.y;
+                                        const percentage = ((value / totalStudents) * 100).toFixed(1);
+                                        return `Students: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                color: '#ffd700',
+                                anchor: 'end',
+                                align: 'top',
+                                offset: 5,
+                                font: {
+                                    family: 'Pirata One',
+                                    size: 14
+                                },
+                                formatter: function(value) {
+                                    const percentage = ((value / totalStudents) * 100).toFixed(1);
+                                    return percentage + '%';
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#ffd700',
+                                    font: {
+                                        family: 'Pirata One',
+                                        size: 14
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: '#ffd700',
+                                    font: {
+                                        family: 'Pirata One',
+                                        size: 14
+                                    },
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            }
+            
+            function createPieChart(labels, data) {
+                const ctx = document.getElementById('pieChart').getContext('2d');
+                const totalStudents = data.reduce((sum, val) => sum + val, 0);
+                
+                if (pieChart) {
+                    pieChart.destroy();
+                }
+                
+                pieChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: generateColors(labels.length, 0.7),
+                            borderColor: generateColors(labels.length, 1),
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            animateRotate: true,
+                            animateScale: true,
+                            duration: 2000,
+                            easing: 'easeOutQuart',
+                            delay: (context) => context.dataIndex * 150
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    font: {
+                                        family: 'Pirata One',
+                                        size: 16
+                                    },
+                                    color: '#ffd700',
+                                    padding: 20,
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            return data.labels.map((label, i) => {
+                                                const value = data.datasets[0].data[i];
+                                                const percentage = ((value / totalStudents) * 100).toFixed(1);
+                                                return {
+                                                    text: `${label} (${percentage}%)`,
+                                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                                    strokeStyle: data.datasets[0].borderColor[i],
+                                                    lineWidth: 1,
+                                                    hidden: isNaN(data.datasets[0].data[i]) || chart.getDatasetMeta(0).data[i].hidden,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
+                                    }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Students Distribution by Department',
+                                color: '#ffd700',
+                                font: {
+                                    family: 'Permanent Marker',
+                                    size: 24,
+                                    weight: 'bold'
+                                },
+                                padding: 20
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleFont: {
+                                    family: 'Permanent Marker',
+                                    size: 14
+                                },
+                                bodyFont: {
+                                    family: 'Pirata One',
+                                    size: 16
+                                },
+                                titleColor: '#ffd700',
+                                bodyColor: '#ffffff',
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed;
+                                        const percentage = ((value / totalStudents) * 100).toFixed(1);
+                                        return `Students: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                color: '#000000',
+                                font: {
+                                    family: 'Pirata One',
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                formatter: function(value) {
+                                    const percentage = ((value / totalStudents) * 100).toFixed(1);
+                                    return percentage + '%';
+                                },
+                                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                borderRadius: 4,
+                                padding: 4
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            }
+            
+            function populateTable(departmentData) {
+                tableBody.innerHTML = '';
+                const totalStudents = departmentData.reduce((sum, item) => sum + item[1], 0);
+                
+                departmentData.forEach(item => {
+                    const row = document.createElement('tr');
+                    const departmentCell = document.createElement('td');
+                    const countCell = document.createElement('td');
+                    const percentageCell = document.createElement('td');
+                    
+                    departmentCell.textContent = item[0];
+                    countCell.textContent = item[1];
+                    const percentage = ((item[1] / totalStudents) * 100).toFixed(1);
+                    percentageCell.textContent = `${percentage}%`;
+                    
+                    row.appendChild(departmentCell);
+                    row.appendChild(countCell);
+                    row.appendChild(percentageCell);
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            function toggleChartView(chartType) {
+                if (chartType === 'bar') {
+                    barChartBtn.classList.add('active');
+                    pieChartBtn.classList.remove('active');
+                    barChartContainer.classList.remove('hidden');
+                    pieChartContainer.classList.add('hidden');
+                    // Trigger bar chart animation
+                    if (barChart) {
+                        barChart.update('reset');
+                    }
+                } else {
+                    barChartBtn.classList.remove('active');
+                    pieChartBtn.classList.add('active');
+                    barChartContainer.classList.add('hidden');
+                    pieChartContainer.classList.remove('hidden');
+                    // Trigger pie chart animation
+                    if (pieChart) {
+                        pieChart.update('reset');
+                    }
+                }
+            }
+            
+            function generateColors(count, alpha) {
+                const colors = [];
+                const hueStep = 360 / count;
+                
+                for (let i = 0; i < count; i++) {
+                    const hue = i * hueStep;
+                    colors.push(`hsla(${hue}, 70%, 60%, ${alpha})`);
+                }
+                
+                return colors;
+            }
+            
+            function exportResults() {
+                if (!csvData) {
+                    alert('No data to export. Please upload a CSV file first.');
+                    return;
+                }
+                
+                const totalStudents = Object.values(departmentCounts).reduce((sum, val) => sum + val, 0);
+                
+                // Create CSV content
+                let csvContent = 'Department,Student Count,Percentage\n';
+                
+                Object.entries(departmentCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .filter(item => item[0] && item[0].trim() !== '')
+                    .forEach(([department, count]) => {
+                        const percentage = ((count / totalStudents) * 100).toFixed(1);
+                        csvContent += `${department},${count},${percentage}%\n`;
+                    });
+                
+                // Create blob and download
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'department_analysis.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // Theme Toggle
+            const themeToggle = document.getElementById('themeToggle');
+            let isDarkMode = true;
+
+            themeToggle.addEventListener('click', () => {
+                isDarkMode = !isDarkMode;
+                document.body.style.background = isDarkMode 
+                    ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(46, 20, 20, 0.95))'
+                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(240, 230, 220, 0.95))';
+                themeToggle.innerHTML = isDarkMode 
+                    ? '<i class="fas fa-moon"></i>' 
+                    : '<i class="fas fa-sun"></i>';
+            });
+
+            // Sorting
+            document.getElementById('sortByName').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('sortByCount').classList.remove('active');
+                const sorted = Object.entries(departmentCounts)
+                    .sort((a, b) => a[0].localeCompare(b[0]));
+                updateCharts(sorted);
+            });
+
+            document.getElementById('sortByCount').addEventListener('click', function() {
+                this.classList.add('active');
+                document.getElementById('sortByName').classList.remove('active');
+                const sorted = Object.entries(departmentCounts)
+                    .sort((a, b) => b[1] - a[1]);
+                updateCharts(sorted);
+            });
+
+            function updateCharts(sortedData) {
+                const labels = sortedData.map(item => item[0]);
+                const data = sortedData.map(item => item[1]);
+                
+                createBarChart(labels, data);
+                createPieChart(labels, data);
+                populateTable(sortedData);
+            }
+
+            // Statistics Update
+            function updateStatistics() {
+                const total = Object.values(departmentCounts).reduce((sum, val) => sum + val, 0);
+                const deptCount = Object.keys(departmentCounts).length;
+                const avg = deptCount > 0 ? Math.round(total / deptCount) : 0;
+                const largest = Object.entries(departmentCounts)
+                    .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+
+                document.getElementById('totalStudents').textContent = total;
+                document.getElementById('totalDepartments').textContent = deptCount;
+                document.getElementById('averageStudents').textContent = avg;
+                document.getElementById('largestDepartment').textContent = largest;
+            }
+
+            // Comparison Feature
+            function setupComparison() {
+                const dept1Select = document.getElementById('dept1Select');
+                const dept2Select = document.getElementById('dept2Select');
+                const compareBtn = document.getElementById('compareBtn');
+                
+                // Populate department options
+                const departments = Object.keys(departmentCounts);
+                departments.forEach(dept => {
+                    dept1Select.add(new Option(dept, dept));
+                    dept2Select.add(new Option(dept, dept));
+                });
+
+                compareBtn.addEventListener('click', () => {
+                    const dept1 = dept1Select.value;
+                    const dept2 = dept2Select.value;
+                    
+                    if (dept1 && dept2) {
+                        createComparisonChart(dept1, dept2);
+                        document.getElementById('comparisonContainer').classList.add('active');
+                    }
+                });
+            }
+
+            function createComparisonChart(dept1, dept2) {
+                const ctx = document.getElementById('comparisonChart').getContext('2d');
+                const data = {
+                    labels: [dept1, dept2],
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: [departmentCounts[dept1], departmentCounts[dept2]],
+                        backgroundColor: ['rgba(255, 215, 0, 0.7)', 'rgba(196, 30, 58, 0.7)'],
+                        borderColor: ['#ffd700', '#c41e3a'],
+                        borderWidth: 2
+                    }]
+                };
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Department Comparison',
+                                color: '#ffd700',
+                                font: {
+                                    family: 'Permanent Marker',
+                                    size: 20
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#ffd700'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Enhanced Export Options
+            document.getElementById('exportPDF').addEventListener('click', () => {
+                // Implement PDF export using jsPDF or similar library
+                alert('PDF export feature coming soon!');
+            });
+
+            document.getElementById('exportJSON').addEventListener('click', () => {
+                const jsonData = JSON.stringify(departmentCounts, null, 2);
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'department_analysis.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            // Data Insights Feature
+            function generateInsights() {
+                if (!departmentCounts || Object.keys(departmentCounts).length === 0) return;
+
+                const insightsContent = document.getElementById('insightsContent');
+                const totalStudents = Object.values(departmentCounts).reduce((sum, val) => sum + val, 0);
+                const departments = Object.entries(departmentCounts).sort((a, b) => b[1] - a[1]);
+                const avgStudents = Math.round(totalStudents / departments.length);
+
+                // Calculate insights
+                const topDepartment = departments[0];
+                const smallestDepartment = departments[departments.length - 1];
+                const aboveAverage = departments.filter(dept => dept[1] > avgStudents).length;
+
+                // Clear previous insights
+                insightsContent.innerHTML = '';
+
+                // Create insight cards
+                const insights = [
+                    {
+                        icon: '⚔️',
+                        title: "Captain's Observation",
+                        content: `The mighty ${topDepartment[0]} leads our fleet with ${topDepartment[1]} nakama, while ${smallestDepartment[0]} forms our smallest but valuable crew of ${smallestDepartment[1]}.`
+                    },
+                    {
+                        icon: '🎯',
+                        title: "Navigator's Report",
+                        content: `${aboveAverage} departments sail above the average crew size of ${avgStudents} members, showing our diverse strength distribution!`
+                    },
+                    {
+                        icon: '🗺️',
+                        title: "Log Pose Reading",
+                        content: `Our total fleet of ${totalStudents} members is distributed across ${departments.length} different divisions, each contributing to our grand adventure!`
+                    }
+                ];
+
+                insights.forEach(insight => {
+                    const card = document.createElement('div');
+                    card.className = 'insight-card';
+                    card.innerHTML = `
+                        <span class="insight-icon">${insight.icon}</span>
+                        <h3 class="insight-title">${insight.title}</h3>
+                        <p class="insight-content">${insight.content}</p>
+                    `;
+                    insightsContent.appendChild(card);
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
