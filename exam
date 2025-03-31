@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Data Visualization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: rgba(30, 41, 59, 0.8);
+            --primary-color: #38bdf8;
+            --secondary-color: #818cf8;
+            --accent-color: #f472b6;
+            --text-color: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --neutral-color: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-color), #020617);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .chart-container {
+            background: var(--surface-color);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.2),
+                0 10px 10px -5px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            padding: 32px;
+            width: 900px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .chart-header {
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .chart-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+
+        .grid line {
+            stroke: rgba(255, 255, 255, 0.05);
+        }
+
+        .bar {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .bar:hover {
+            filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.2));
+        }
+
+        .axis-label {
+            font-size: 12px;
+            fill: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .value-label {
+            font-size: 13px;
+            font-weight: 600;
+            text-anchor: middle;
+            fill: white;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(10px);
+        }
+
+        .x-axis-line, .y-axis-line {
+            stroke: rgba(255, 255, 255, 0.08);
+            stroke-width: 1;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 32px;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn.active {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--primary-color);
+        }
+
+        .chart-wrapper {
+            position: relative;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 70%, var(--surface-color));
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.4;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(10px);
+            pointer-events: none;
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tooltip-label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .tooltip-value {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.3; }
+        }
+
+        .background-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            filter: blur(150px);
+            opacity: 0.1;
+            z-index: -1;
+            animation: pulse 8s infinite;
+        }
+
+        .background-glow:nth-child(2) {
+            left: -200px;
+            top: -100px;
+            background: var(--secondary-color);
+            animation-delay: 2s;
+        }
+
+        .background-glow:nth-child(3) {
+            right: -200px;
+            bottom: -100px;
+            background: var(--accent-color);
+            animation-delay: 4s;
+        }
+
+        .data-range {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .range-value {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .dataset-info {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-glow"></div>
+    <div class="background-glow"></div>
+    <div class="background-glow"></div>
+
+    <div class="chart-container">
+        <div class="chart-header">
+            <h1 class="chart-title">Advanced Data Visualization</h1>
+            <p class="chart-subtitle">Interactive, real-time performance metrics with fluid transitions</p>
+            
+            <div class="data-range">
+                <div class="range-value">0</div>
+                <div class="range-value">25</div>
+                <div class="range-value">50</div>
+                <div class="range-value">75</div>
+                <div class="range-value">100</div>
+            </div>
+        </div>
+        
+        <div class="chart-wrapper">
+            <div id="chart"></div>
+            <div class="overlay"></div>
+        </div>
+        
+        <div class="dataset-info">
+            <span class="indicator"></span>
+            <span id="datasetLabel">Dataset 1: Q1-Q5 Performance Metrics</span>
+        </div>
+
+        <div class="controls">
+            <button class="btn active" id="dataset1">Financial Growth</button>
+            <button class="btn" id="dataset2">Market Share</button>
+            <button class="btn" id="dataset3">User Engagement</button>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-label">Category</div>
+        <div class="tooltip-value">Value: 0</div>
+    </div>
+
+    <script>
+        // Advanced JavaScript implementation of animated bar chart
+        
+        // Chart configuration
+        const config = {
+            width: 836,
+            height: 420,
+            padding: {top: 30, right: 30, bottom: 40, left: 60},
+            barPadding: 0.4,
+            animationDuration: 1200, // milliseconds
+            colors: ['#38bdf8', '#818cf8', '#a78bfa', '#f472b6', '#fb7185']
+        };
+        
+        // Dataset descriptions
+        const datasetLabels = {
+            dataset1: "Financial Growth: Q1-Q5 (2023)",
+            dataset2: "Market Share: Key Segments (Current)",
+            dataset3: "User Engagement: Platform Metrics"
+        };
+        
+        // Sample datasets with enhanced data
+        const datasets = {
+            dataset1: [
+                { label: 'Q1', value: 45, category: 'Financial' },
+                { label: 'Q2', value: 72, category: 'Financial' },
+                { label: 'Q3', value: 38, category: 'Financial' },
+                { label: 'Q4', value: 65, category: 'Financial' },
+                { label: 'Q5', value: 52, category: 'Financial' }
+            ],
+            dataset2: [
+                { label: 'Mobile', value: 85, category: 'Market' },
+                { label: 'Desktop', value: 32, category: 'Market' },
+                { label: 'Tablet', value: 68, category: 'Market' },
+                { label: 'TV', value: 45, category: 'Market' },
+                { label: 'Other', value: 90, category: 'Market' }
+            ],
+            dataset3: [
+                { label: 'Views', value: 20, category: 'Engagement' },
+                { label: 'Clicks', value: 40, category: 'Engagement' },
+                { label: 'Shares', value: 60, category: 'Engagement' },
+                { label: 'Saves', value: 80, category: 'Engagement' },
+                { label: 'Replies', value: 100, category: 'Engagement' }
+            ]
+        };
+        
+        // Initial dataset
+        let data = [...datasets.dataset1];
+        
+        // Target values for animation
+        let targetData = [...data];
+        
+        // Animation timestamp tracking
+        let animationStartTime = null;
+        let animating = false;
+        let activeDataset = 'dataset1';
+        
+        // Create SVG element
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', config.width);
+        svg.setAttribute('height', config.height);
+        document.getElementById('chart').appendChild(svg);
+        
+        // Create gradient definitions
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svg.appendChild(defs);
+        
+        // Create gradient for each bar
+        config.colors.forEach((color, i) => {
+            // Main gradient for bars
+            const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            gradient.setAttribute('id', `gradient-${i}`);
+            gradient.setAttribute('x1', '0%');
+            gradient.setAttribute('y1', '0%');
+            gradient.setAttribute('x2', '0%');
+            gradient.setAttribute('y2', '100%');
+            
+            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop1.setAttribute('offset', '0%');
+            stop1.setAttribute('stop-color', color);
+            stop1.setAttribute('stop-opacity', '1');
+            
+            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop2.setAttribute('offset', '100%');
+            stop2.setAttribute('stop-color', shadeColor(color, -30));
+            stop2.setAttribute('stop-opacity', '0.7');
+            
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            defs.appendChild(gradient);
+            
+            // Hover gradient for enhanced effect
+            const hoverGradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            hoverGradient.setAttribute('id', `hover-gradient-${i}`);
+            hoverGradient.setAttribute('x1', '0%');
+            hoverGradient.setAttribute('y1', '0%');
+            hoverGradient.setAttribute('x2', '0%');
+            hoverGradient.setAttribute('y2', '100%');
+            
+            const hoverStop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            hoverStop1.setAttribute('offset', '0%');
+            hoverStop1.setAttribute('stop-color', shadeColor(color, 10));
+            hoverStop1.setAttribute('stop-opacity', '1');
+            
+            const hoverStop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            hoverStop2.setAttribute('offset', '100%');
+            hoverStop2.setAttribute('stop-color', shadeColor(color, -20));
+            hoverStop2.setAttribute('stop-opacity', '0.8');
+            
+            hoverGradient.appendChild(hoverStop1);
+            hoverGradient.appendChild(hoverStop2);
+            defs.appendChild(hoverGradient);
+        });
+        
+        // Create grid and axes
+        const chartArea = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        chartArea.setAttribute('transform', `translate(${config.padding.left}, ${config.padding.top})`);
+        svg.appendChild(chartArea);
+        
+        // Function to darken/lighten color
+        function shadeColor(color, percent) {
+            let R = parseInt(color.substring(1,3), 16);
+            let G = parseInt(color.substring(3,5), 16);
+            let B = parseInt(color.substring(5,7), 16);
+            
+            R = parseInt(R * (100 + percent) / 100);
+            G = parseInt(G * (100 + percent) / 100);
+            B = parseInt(B * (100 + percent) / 100);
+            
+            R = (R < 255) ? R : 255;
+            G = (G < 255) ? G : 255;
+            B = (B < 255) ? B : 255;
+            
+            const RR = ((R.toString(16).length === 1) ? "0" + R.toString(16) : R.toString(16));
+            const GG = ((G.toString(16).length === 1) ? "0" + G.toString(16) : G.toString(16));
+            const BB = ((B.toString(16).length === 1) ? "0" + B.toString(16) : B.toString(16));
+            
+            return "#" + RR + GG + BB;
+        }
+        
+        // Initialize the chart (axes and grid)
+        function initializeChart() {
+            const chartWidth = config.width - config.padding.left - config.padding.right;
+            const chartHeight = config.height - config.padding.top - config.padding.bottom;
+            
+            // X-axis line
+            const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            xAxis.setAttribute('x1', 0);
+            xAxis.setAttribute('y1', chartHeight);
+            xAxis.setAttribute('x2', chartWidth);
+            xAxis.setAttribute('y2', chartHeight);
+            xAxis.setAttribute('class', 'x-axis-line');
+            chartArea.appendChild(xAxis);
+            
+            // Y-axis line
+            const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            yAxis.setAttribute('x1', 0);
+            yAxis.setAttribute('y1', 0);
+            yAxis.setAttribute('x2', 0);
+            yAxis.setAttribute('y2', chartHeight);
+            yAxis.setAttribute('class', 'y-axis-line');
+            chartArea.appendChild(yAxis);
+            
+            // Grid lines
+            const maxValue = 100; // Fixed scale for better animation
+            const yTickCount = 4;
+            
+            for (let i = 0; i <= yTickCount; i++) {
+                const yPos = chartHeight * (1 - i / yTickCount);
+                
+                // Grid line
+                const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                gridLine.setAttribute('x1', 0);
+                gridLine.setAttribute('y1', yPos);
+                gridLine.setAttribute('x2', chartWidth);
+                gridLine.setAttribute('y2', yPos);
+                gridLine.setAttribute('class', 'grid');
+                gridLine.setAttribute('stroke-dasharray', '1,3');
+                chartArea.appendChild(gridLine);
+            }
+            
+            // Create bar group
+            const barGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            barGroup.setAttribute('id', 'bar-group');
+            chartArea.appendChild(barGroup);
+        }
+        
+        // Get tooltip element
+        const tooltip = document.getElementById('tooltip');
+        
+        // Render the bars based on current data
+        function renderBars() {
+            const chartWidth = config.width - config.padding.left - config.padding.right;
+            const chartHeight = config.height - config.padding.top - config.padding.bottom;
+            const barWidth = chartWidth / data.length * (1 - config.barPadding);
+            const maxValue = 100; // Fixed scale
+            
+            // Remove existing bars to start fresh
+            const barGroup = document.getElementById('bar-group');
+            while (barGroup.firstChild) {
+                barGroup.removeChild(barGroup.firstChild);
+            }
+            
+            // Create bars with enhanced styling
+            data.forEach((item, i) => {
+                const x = i * (chartWidth / data.length) + (chartWidth / data.length - barWidth) / 2;
+                const barHeight = (item.value / maxValue) * chartHeight;
+                const y = chartHeight - barHeight;
+                
+                // Create bar group
+                const barContainer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                barContainer.setAttribute('class', 'bar-container');
+                barContainer.setAttribute('data-index', i);
+                barGroup.appendChild(barContainer);
+                
+                // Create bar
+                const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                bar.setAttribute('x', x);
+                bar.setAttribute('y', y);
+                bar.setAttribute('width', barWidth);
+                bar.setAttribute('height', barHeight);
+                bar.setAttribute('rx', 6); // Rounded corners
+                bar.setAttribute('ry', 6);
+                bar.setAttribute('fill', `url(#gradient-${i % config.colors.length})`);
+                bar.setAttribute('class', 'bar');
+                bar.setAttribute('data-value', Math.round(item.value));
+                bar.setAttribute('data-label', item.label);
+                bar.setAttribute('data-category', item.category);
+                barContainer.appendChild(bar);
+                
+                // Bar reflection/highlight
+                const highlight = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                highlight.setAttribute('x', x + barWidth * 0.1);
+                highlight.setAttribute('y', y);
+                highlight.setAttribute('width', barWidth * 0.2);
+                highlight.setAttribute('height', barHeight * 0.7);
+                highlight.setAttribute('rx', 3);
+                highlight.setAttribute('ry', 3);
+                highlight.setAttribute('fill', 'rgba(255, 255, 255, 0.07)');
+                barContainer.appendChild(highlight);
+                
+                // X-axis label (category)
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x + barWidth / 2);
+                label.setAttribute('y', chartHeight + 20);
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('class', 'axis-label');
+                label.textContent = item.label;
+                barGroup.appendChild(label);
+                
+                // Value label
+                const valueLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                valueLabel.setAttribute('x', x + barWidth / 2);
+                valueLabel.setAttribute('y', y + barHeight / 2 + 5);
+                valueLabel.setAttribute('class', 'value-label');
+                valueLabel.textContent = Math.round(item.value);
+                barContainer.appendChild(valueLabel);
+                
+                // Add hover effect and tooltip interaction
+                barContainer.addEventListener('mouseenter', function(e) {
+                    // Update bar fill
+                    bar.setAttribute('fill', `url(#hover-gradient-${i % config.colors.length})`);
+                    
+                    // Make value label visible
+                    valueLabel.style.opacity = 1;
+                    valueLabel.style.transform = 'translateY(0)';
+                    
+                    // Show tooltip
+                    const tooltipLabel = tooltip.querySelector('.tooltip-label');
+                    const tooltipValue = tooltip.querySelector('.tooltip-value');
+                    tooltipLabel.textContent = `${item.category}: ${item.label}`;
+                    tooltipValue.textContent = `Value: ${Math.round(item.value)}`;
+                    
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY - 10) + 'px';
+                    tooltip.classList.add('visible');
+                    
+                    // Scale bar slightly
+                    bar.style.transform = 'scaleY(1.03)';
+                    bar.style.transformOrigin = 'bottom';
+                });
+                
+                barContainer.addEventListener('mousemove', function(e) {
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY - 10) + 'px';
+                });
+                
+                barContainer.addEventListener('mouseleave', function() {
+                    // Restore original fill
+                    bar.setAttribute('fill', `url(#gradient-${i % config.colors.length})`);
+                    
+                    // Hide value label
+                    valueLabel.style.opacity = 0;
+                    valueLabel.style.transform = 'translateY(10px)';
+                    
+                    // Hide tooltip
+                    tooltip.classList.remove('visible');
+                    
+                    // Restore original size
+                    bar.style.transform = 'scaleY(1)';
+                });
+            });
+        }
+        
+        // Update target data with the selected dataset
+        function updateDataset(datasetName) {
+            if (animating || activeDataset === datasetName) return;
+            
+            activeDataset = datasetName;
+            targetData = [...datasets[datasetName]];
+            animating = true;
+            
+            // Update active button state
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(datasetName).classList.add('active');
+            
+            // Update dataset info label
+            document.getElementById('datasetLabel').textContent = datasetLabels[datasetName];
+            
+            requestAnimationFrame(animateTransition);
+        }
+        
+        // Enhanced animation with spring physics for more natural movement
+        function animateTransition(timestamp) {
+            if (!animationStartTime) animationStartTime = timestamp;
+            const elapsed = timestamp - animationStartTime;
+            
+            // Use a cubic-bezier type ease for more natural animation
+            const t = Math.min(elapsed / config.animationDuration, 1);
+            const progress = cubicBezier(0.34, 1.56, 0.64, 1, t);
+            
+            // Interpolate values with enhanced effect
+            data = data.map((item, i) => ({
+                label: targetData[i].label,
+                value: item.value + (targetData[i].value - item.value) * progress,
+                category: targetData[i].category
+            }));
+            
+            // Render current state
+            renderBars();
+            
+            // Continue animation if not complete
+            if (t < 1) {
+                requestAnimationFrame(animateTransition);
+            } else {
+                animationStartTime = null;
+                animating = false;
+            }
+        }
+        
+        // Cubic bezier function for more natural easing
+        function cubicBezier(x1, y1, x2, y2, t) {
+            const cx = 3 * x1;
+            const bx = 3 * (x2 - x1) - cx;
+            const ax = 1 - cx - bx;
+            
+            const cy = 3 * y1;
+            const by = 3 * (y2 - y1) - cy;
+            const ay = 1 - cy - by;
+            
+            const tSquared = t * t;
+            const tCubed = tSquared * t;
+            
+            return ay * tCubed + by * tSquared + cy * t;
+        }
+        
+        // Initialize and render initial state
+        initializeChart();
+        renderBars();
+        
+        // Set up dataset buttons
+        document.getElementById('dataset1').addEventListener('click', function() {
+            updateDataset('dataset1');
+        });
+        
+        document.getElementById('dataset2').addEventListener('click', function() {
+            updateDataset('dataset2');
+        });
+        
+        document.getElementById('dataset3').addEventListener('click', function() {
+            updateDataset('dataset3');
+        });
+        
+        // Auto-cycle through datasets every few seconds
+        let currentDataset = 1;
+        const autoCycle = setInterval(() => {
+            if (animating) return;
+            currentDataset = (currentDataset % 3) + 1;
+            updateDataset(`dataset${currentDataset}`);
+        }, 5000);
+    </script>
+</body>
+</html> 
